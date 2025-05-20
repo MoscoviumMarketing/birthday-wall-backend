@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const dotenv = require('dotenv');
+const Comment = require("./models/Comment");
+
 
 dotenv.config();
 
@@ -69,5 +71,28 @@ app.post('/upload', upload.single('file'), (req, res) => {
   ).end(file.buffer);
 });
 
+
 const PORT = process.env.PORT || 5000;
+// Add a comment
+app.post("/comments", async (req, res) => {
+  try {
+    const { postId, text } = req.body;
+    const newComment = await Comment.create({ postId, text });
+    res.status(201).json(newComment);
+  } catch (err) {
+    console.error("Comment POST error:", err);
+    res.status(500).json({ error: "Failed to add comment" });
+  }
+});
+
+// Get comments for a post
+app.get("/comments/:postId", async (req, res) => {
+  try {
+    const comments = await Comment.find({ postId: req.params.postId }).sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
+
 app.listen(PORT, () => console.log(`Backend server running on http://localhost:${PORT}`));
