@@ -47,6 +47,7 @@ app.get('/posts', async (req, res) => {
   res.json(posts);
 });
 
+
 app.post('/upload', upload.single('file'), (req, res) => {
   const { caption, year } = req.body;
   const file = req.file;
@@ -92,6 +93,18 @@ app.get("/comments/:postId", async (req, res) => {
     res.json(comments);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
+
+
+// Delete a post by ID (also delete its comments)
+app.delete("/posts/:id", async (req, res) => {
+  try {
+    await Post.findByIdAndDelete(req.params.id);
+    await Comment.deleteMany({ postId: req.params.id });
+    res.status(200).json({ message: "Post and comments deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete post" });
   }
 });
 
